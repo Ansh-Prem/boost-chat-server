@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boost Chat — Neon UI</title>
+  <meta name="description" content="Colorful WebSocket chat UI for Boost.Asio + Boost.Beast." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div class="bg-blobs" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+  </div>
+
+  <div class="shell">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">
+          <span class="logo-dot"></span>
+          <span class="logo-ring"></span>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">Boost Chat</div>
+          <div class="brand-subtitle">WebSocket Client • Neon UI</div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="conn-card">
+          <div class="conn-line">
+            <span class="pill" id="statusPill">DISCONNECTED</span>
+            <span class="ws-url" id="wsLabel">-</span>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-glow" id="btnConnect" type="button">Connect</button>
+            <button class="btn btn-ghost" id="btnDisconnect" type="button" disabled>Disconnect</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main layout -->
+    <main class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">Identity</h2>
+            <p class="card-note">Set nickname and join a room.</p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="nickInput">Nickname</label>
+            <div class="control">
+              <input class="input" id="nickInput" placeholder="e.g. ansh" autocomplete="off" />
+              <button class="btn btn-accent" id="btnSetNick" type="button">Set</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="roomInput">Room</label>
+            <div class="control">
+              <input class="input" id="roomInput" value="lobby" autocomplete="off" />
+              <button class="btn btn-accent2" id="btnJoin" type="button">Join</button>
+            </div>
+          </div>
+
+          <div class="chips">
+            <span class="chip"><code>/name nick</code></span>
+            <span class="chip"><code>/join room</code></span>
+            <span class="chip"><code>/pm nick msg</code></span>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">Private Message</h2>
+            <p class="card-note">DM works inside same room.</p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="pmToInput">To</label>
+            <input class="input" id="pmToInput" placeholder="nickname" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="pmMsgInput">Message</label>
+            <input class="input" id="pmMsgInput" placeholder="type something..." autocomplete="off" />
+          </div>
+
+          <button class="btn btn-wide btn-pink" id="btnPm" type="button">Send PM</button>
+
+          <div class="divider"></div>
+
+          <button class="btn btn-wide btn-ghost" id="btnClear" type="button">Clear Chat</button>
+        </section>
+      </aside>
+
+      <!-- Chat -->
+      <section class="chat">
+        <header class="chat-head">
+          <div class="chat-title">
+            Room <span class="room-pill" id="roomLabel">lobby</span>
+          </div>
+          <div class="chat-sub">
+            <span class="hint">Enter to send • Works with TCP + WS clients</span>
+          </div>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite" aria-relevant="additions"></div>
+
+        <form id="sendForm" class="composer">
+          <input id="msgInput" class="input input-grow" placeholder="Write a message..." autocomplete="off" />
+          <button class="btn btn-glow" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Backend: Boost.Asio + Boost.Beast</span>
+      <span class="sep">•</span>
+      <span>WS <b>8080</b> • TCP <b>5555</b></span>
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

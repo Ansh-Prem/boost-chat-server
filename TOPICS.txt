@@ -1,0 +1,268 @@
+BOOST C++ PROGRAMMING TREE (Peerlink Backend Focus)
+====================================================
+
+0. MODERN C++ FOUNDATIONS (Required Before Boost)
+-------------------------------------------------
+0.1 Smart Pointers
+    - std::shared_ptr
+    - std::weak_ptr
+    - std::unique_ptr
+    - enable_shared_from_this
+
+0.2 Move Semantics
+    - std::move
+    - rvalue references
+    - Perfect forwarding
+
+0.3 RAII
+    - Resource ownership
+    - Deterministic destruction
+    - Exception safety
+
+0.4 Lambdas
+    - Capture by reference/value
+    - Mutable lambdas
+    - Async handler callbacks
+
+0.5 STL Containers
+    - std::vector
+    - std::unordered_map
+    - std::deque (write queues)
+    - std::string
+
+0.6 Multithreading (std)
+    - std::thread
+    - std::mutex
+    - std::lock_guard
+    - std::atomic
+
+----------------------------------------------------
+
+1. BOOST.ASIO (CORE OF BACKEND)
+--------------------------------
+
+1.1 io_context
+    - Central event loop
+    - Task queue
+    - run()
+
+1.2 Asynchronous Model
+    - async_accept
+    - async_read
+    - async_write
+    - Completion handlers
+    - Error codes (boost::system::error_code)
+
+1.3 Non-blocking I/O
+    - Reactor pattern
+    - OS-level polling (epoll/kqueue/IOCP)
+
+1.4 Thread Pool
+    - Multiple threads calling io.run()
+    - Work distribution
+    - Handler execution model
+
+1.5 Strand (Optional but Important)
+    - boost::asio::strand
+    - Handler serialization
+    - Avoiding race conditions per session
+
+1.6 TCP Layer
+    - tcp::acceptor
+    - tcp::socket
+    - Endpoints
+    - Listening and binding
+
+----------------------------------------------------
+
+2. BOOST.BEAST (WEBSOCKET LAYER)
+---------------------------------
+
+2.1 HTTP Upgrade
+    - WebSocket handshake
+    - HTTP request/response upgrade
+
+2.2 websocket::stream
+    - async_accept
+    - async_read
+    - async_write
+    - control frames
+
+2.3 Frame Handling
+    - Text frames
+    - Binary frames
+    - Ping / Pong
+
+2.4 Backpressure Handling
+    - Queued writes
+    - Prevent blocking slow clients
+
+----------------------------------------------------
+
+3. BOOST.JSON
+-------------
+
+3.1 JSON Object Model
+    - boost::json::object
+    - boost::json::array
+    - boost::json::value
+
+3.2 Serialization
+    - serialize()
+    - Parsing incoming JSON
+
+3.3 Protocol Design
+    - Message type field
+    - Routing logic
+    - Structured communication
+
+----------------------------------------------------
+
+4. SESSION ARCHITECTURE
+------------------------
+
+4.1 TcpSession / WsSession
+    - Represents one client connection
+    - Owns socket
+    - Owns read buffer
+    - Owns write queue
+
+4.2 Lifetime Management
+    - shared_from_this()
+    - Self-capturing handlers
+    - Prevent premature deletion
+
+4.3 Read Loop Pattern
+    - async_read → handler → re-arm read
+
+4.4 Write Queue Pattern
+    - push to queue
+    - if not writing → start async_write
+    - on write completion → pop + continue
+
+----------------------------------------------------
+
+5. ROOM SYSTEM DESIGN
+----------------------
+
+5.1 RoomManager
+    - unordered_map<string, shared_ptr<ChatRoom>>
+    - create room if not exists
+    - room registry
+
+5.2 ChatRoom
+    - vector<shared_ptr<Session>>
+    - join()
+    - leave()
+    - broadcast()
+
+5.3 Concurrency Safety
+    - mutex protection
+    - Avoid iterating while modifying
+
+----------------------------------------------------
+
+6. CONCURRENCY MODEL
+---------------------
+
+6.1 Single io_context
+    - Central task dispatcher
+
+6.2 Multi-threaded Execution
+    - N threads running io.run()
+    - Any handler can run on any thread
+
+6.3 Shared State Protection
+    - Mutex for room registry
+    - Atomic flags (if needed)
+
+6.4 Avoiding Deadlocks
+    - Minimal locking
+    - Short critical sections
+
+----------------------------------------------------
+
+7. ASYNC FLOW (WHAT ACTUALLY HAPPENS)
+--------------------------------------
+
+7.1 Accept Flow
+    async_accept()
+        ↓
+    Create Session
+        ↓
+    start()
+        ↓
+    async_read()
+
+7.2 Message Flow
+    Client sends JSON
+        ↓
+    async_read handler
+        ↓
+    Parse JSON
+        ↓
+    Route to RoomManager
+        ↓
+    ChatRoom broadcast()
+        ↓
+    async_write to each session
+
+7.3 Write Flow
+    queue.push(message)
+        ↓
+    if idle → async_write
+        ↓
+    completion handler
+        ↓
+    queue.pop()
+        ↓
+    continue if more
+
+----------------------------------------------------
+
+8. MEMORY MANAGEMENT STRATEGY
+------------------------------
+
+8.1 Why shared_ptr?
+    - Async handlers outlive caller scope
+    - Prevent dangling references
+
+8.2 enable_shared_from_this
+    - Safe shared_ptr to "this"
+
+8.3 Ownership Graph
+    RoomManager
+        ↓
+    ChatRoom
+        ↓
+    Sessions
+        ↓
+    Socket + Buffers
+
+----------------------------------------------------
+
+9. DESIGN PATTERNS USED
+------------------------
+
+9.1 Reactor Pattern
+9.2 Observer Pattern (broadcast)
+9.3 RAII
+9.4 Message Queue Pattern
+9.5 Event-driven Architecture
+
+----------------------------------------------------
+
+10. PRODUCTION-LEVEL EXTENSIONS
+--------------------------------
+
+10.1 TLS (Boost.Asio + OpenSSL)
+10.2 Load balancing
+10.3 Horizontal scaling
+10.4 Rate limiting
+10.5 Authentication layer
+10.6 Persistent storage
+
+----------------------------------------------------
+
+END OF BOOST C++ BACKEND KNOWLEDGE TREE
+====================================================

@@ -1,0 +1,835 @@
+# Boost Chat Server (TCP + WebSocket)
+
+## Features
+- Async TCP chat server
+- Multiple rooms: `/join room`
+- Nicknames: `/name nick`
+- Private messages: `/pm nick message`
+- WebSocket gateway via Boost.Beast
+- Non-blocking broadcasts with per-session async write queue
+- Thread pool + graceful shutdown (SIGINT/SIGTERM)
+
+## Run
+./boost_chat_server --tcp 5555 --ws 8080 --threads 4# Peerlink — High-Performance Async Chat Server (C++ / Boost.Asio / Boost.Beast / Boost.JSON) + React UI
+
+Peerlink is a **multi-client**, **asynchronous** chat system designed to handle **hundreds/thousands of concurrent connections** using **non-blocking I/O**.  
+It supports **TCP chat** and **WebSocket chat** with a **JSON-based protocol**, plus a modern React frontend that prints **every action/event in JSON** (TX/RX logs + UI terminal).
+
+> ✅ Resume highlights: async networking, real server architecture, concurrency, message routing, rooms, private messaging, JSON protocol, WebSocket frontend.
+
+---
+
+## ✨ Features
+
+### Backend (C++)
+- ✅ Non-blocking TCP server (Boost.Asio)
+- ✅ WebSocket server (Boost.Beast)
+- ✅ Multi-client concurrency (async read/write + strands)
+- ✅ Rooms (join/create on demand)
+- ✅ Broadcast without blocking threads
+- ✅ Private messaging (PM)
+- ✅ JSON protocol (Boost.JSON)
+- ✅ Structured JSON logging (server prints logs as JSON)
+
+### Frontend (React)
+- ✅ “Peerlink” branding
+- ✅ Clean **white UI + blue borders**
+- ✅ Strict Identity flow:
+  1) Connect
+  2) Set Nickname
+  3) Join Room (default `lobby`, or custom)
+- ✅ Shows Online Users (from server JSON)
+- ✅ PM UI
+- ✅ Reconnect strategy + heartbeat ping/pong
+- ✅ Built-in “Terminal” panel printing **every TX/RX action** in JSON format
+
+---
+
+## 📁 Project Structure
+
+
+boost-chat-server/
+├── CMakeLists.txt
+├── include/
+│ ├── core/
+│ │ ├── ChatRoom.hpp
+│ │ ├── CommandParser.hpp
+│ │ └── RoomManager.hpp
+│ ├── net/
+│ │ ├── TcpServer.hpp
+│ │ ├── TcpSession.hpp
+│ │ ├── WsServer.hpp
+│ │ └── WsSession.hpp
+│ └── util/
+│ └── Log.hpp
+├── src/
+│ ├── core/
+│ │ ├── ChatRoom.cpp
+│ │ ├── CommandParser.cpp
+│ │ └── RoomManager.cpp
+│ ├── net/
+│ │ ├── TcpServer.cpp
+│ │ ├── TcpSession.cpp
+│ │ ├── WsServer.cpp
+│ │ └── WsSession.cpp
+│ ├── util/
+│ │ └── Log.cpp
+│ └── main.cpp
+└── web-react/
+├── index.html
+├── package.json
+├── vite.config.js
+├── public/
+└── src/
+├── App.jsx
+├── main.jsx
+└── styles.css
+
+
+
+---
+
+## ⚙️ Requirements
+
+### Backend
+- CMake >= 3.16
+- GCC/G++ (example: g++ 13.x)
+- Boost (Asio + Beast + JSON + System)
+  - On Ubuntu/WSL: `sudo apt install libboost-all-dev`
+
+### Frontend
+- Node.js (Vite requires a compatible Node version)
+- npm
+
+> If Vite complains about Node version, upgrade Node (Node 20.19+ or 22.12+).
+
+---
+
+## 🚀 Build & Run (Backend)
+
+From project root:
+
+```bash
+cd boost-chat-server
+rm -rf build
+mkdir build && cd build
+cmake ..
+cmake --build . -j
+
+
+
+Run server:
+
+./boost_chat_server --tcp 5555 --ws 8080 --threads 4
+
+
+Expected logs (JSON-like output):
+
+{"ts":"2026-02-24T15:20:04","level":"INFO","msg":"TCP server listening on 0.0.0.0:5555"}
+{"ts":"2026-02-24T15:20:04","level":"INFO","msg":"WS server listening on 0.0.0.0:8080"}
+{"ts":"2026-02-24T15:20:04","level":"INFO","msg":"Running with threads=4"}
+
+
+
+
+
+
+
+🖥️ Run Frontend (React / Peerlink)
+
+Open another terminal:
+
+cd boost-chat-server/web-react
+npm install
+npm run dev
+
+
+
+Then open the URL shown in terminal, typically:
+
+http://localhost:5173
+
+
+
+🔌 How to Use Peerlink (UI Flow)
+
+Peerlink UI enforces a clean flow:
+
+Connect
+
+Set Nickname
+
+Join Room
+
+default: lobby
+
+you can type a custom room name (example: iitp, cs101, projectX)
+
+After join, you are online in that room:
+
+chat messages enabled
+
+PM enabled
+
+online users list updates
+
+The UI has a built-in Terminal panel that prints:
+
+every TX message (client → server)
+
+every RX message (server → client)
+in JSON format.
+
+
+
+🔌 How to Use Peerlink (UI Flow)
+
+Peerlink UI enforces a clean flow:
+
+Connect
+
+Set Nickname
+
+Join Room
+
+default: lobby
+
+you can type a custom room name (example: iitp, cs101, projectX)
+
+After join, you are online in that room:
+
+chat messages enabled
+
+PM enabled
+
+online users list updates
+
+The UI has a built-in Terminal panel that prints:
+
+every TX message (client → server)
+
+every RX message (server → client)
+in JSON format.
+
+🧠 Architecture Overview
+Key Components
+RoomManager
+
+Owns / creates rooms.
+
+Returns existing room if already created.
+
+ChatRoom
+
+Tracks connected sessions
+
+Supports:
+
+join()
+
+leave()
+
+broadcast()
+
+private_message(toNick, payload)
+
+TcpServer / TcpSession
+
+Async accept loop
+
+Per-client session:
+
+async read lines (\n)
+
+parse JSON commands
+
+write queue to avoid blocking
+
+WsServer / WsSession
+
+Async accept + websocket handshake
+
+Reads full WS frames, parses JSON
+
+Sends JSON frames to client
+
+util::Log (Boost.JSON)
+
+Server prints structured JSON logs:
+
+INFO, WARN, ERROR
+
+🧾 Protocol (Client ↔ Server JSON)
+
+The server expects JSON commands from clients.
+
+1) Set Nickname
+
+
+{ "type": "name", "nick": "ansh" }
+
+2) Join Room
+
+{ "type": "join", "room": "lobby" }
+
+3) Broadcast Message (to room)
+
+{ "type": "message", "text": "hello everyone" }
+
+4) Private Message
+
+{ "type": "pm", "to": "prem", "text": "bro check this" }
+
+
+5) Ping / Pong (heartbeat)
+
+Client sends:
+
+{ "type": "ping" }
+
+Server replies:
+
+{ "type": "pong", "ts": 1739999999 }
+
+
+📨 Server → Client Events (Examples)
+System notification
+{ "type": "system", "room": "lobby", "text": "ansh joined", "ts": 1739999999 }
+Room user list update
+{ "type": "users", "room": "lobby", "users": ["ansh","prem"], "ts": 1739999999 }
+Message
+{ "type": "message", "room": "lobby", "from": "ansh", "text": "hi", "ts": 1739999999 }
+Private message
+{ "type": "pm", "room": "lobby", "from": "ansh", "to": "prem", "text": "hello", "ts": 1739999999 }
+Error
+{ "type": "error", "room": "lobby", "text": "user_not_found: xyz", "ts": 1739999999 }
+🧪 Testing (Quick)
+Option A: Use the React UI (Recommended)
+
+Run server
+
+Run frontend
+
+Connect → name → join
+
+Open another browser tab and repeat to simulate another user
+
+Option B: WebSocket CLI test (Optional)
+
+If you have websocat installed:
+
+websocat ws://127.0.0.1:8080
+
+Then type commands:
+
+{"type":"name","nick":"cliUser"}
+{"type":"join","room":"lobby"}
+{"type":"message","text":"hello from terminal"}
+🧩 Peerlink Frontend Files
+web-react/src/App.jsx
+
+Main UI
+
+Identity section (Connect → Name → Join)
+
+Online users list
+
+Chat window
+
+PM controls
+
+JSON Terminal logs (TX/RX)
+
+Auto reconnect + ping heartbeat
+
+web-react/src/styles.css
+
+“Peerlink” theme
+
+White background
+
+Blue borders
+
+Clean modern layout
+
+Responsive behavior
+
+web-react/index.html
+
+Page title: Peerlink
+
+🛠️ Common Issues & Fixes
+1) “Clock skew detected” in WSL
+
+This happens due to Windows/WSL file timestamp mismatch.
+
+Fix:
+
+sudo hwclock -s
+
+Or restart WSL from PowerShell:
+
+wsl --shutdown
+2) Vite complains about Node version
+
+Upgrade Node to meet Vite requirements (Node 20.19+ / 22.12+).
+
+✅ Resume-Ready Summary (Copy for CV)
+
+Peerlink — High-Performance Async Chat Platform
+Built a production-style chat system in C++ using Boost.Asio/Beast with non-blocking TCP + WebSocket support, scalable session handling via async I/O and strands, multi-room message routing, private messaging, and a JSON command/event protocol using Boost.JSON. Developed a React frontend with reconnect logic, heartbeat ping/pong, real-time user list, and full JSON TX/RX terminal logging for observability.
+
+📌 Next Improvements (Optional “More Resume Heavy”)
+
+Auth/token handshake
+
+Rate limiting + flood protection
+
+Message persistence (Redis/Postgres)
+
+Presence per room + global presence
+
+Metrics dashboard (Prometheus)
+
+TLS (wss://) with certificates
+
+Horizontal scaling + load balancer
+
+
+
+
+
+
+PEERLINK — HOW TO RUN (NOOB MACHINE / FRESH LINUX) + FUNCTIONS INDEX
+===================================================================
+
+This guide assumes:
+- You have a fresh Linux / Ubuntu / WSL Ubuntu install
+- NOTHING is installed yet (no compiler, no cmake, no boost, no node)
+- You want to build & run BOTH:
+  1) C++ backend server (Boost.Asio + Boost.Beast + Boost.JSON)
+  2) React frontend (Vite)
+
+------------------------------------------------------------
+0) QUICK CHECK: What OS am I on?
+------------------------------------------------------------
+Run:
+  cat /etc/os-release
+  uname -a
+
+If you're on Ubuntu/WSL Ubuntu, the commands below work directly.
+
+------------------------------------------------------------
+1) UPDATE SYSTEM (REQUIRED)
+------------------------------------------------------------
+Run:
+  sudo apt update
+  sudo apt upgrade -y
+
+------------------------------------------------------------
+2) INSTALL C++ BUILD TOOLS (COMPILER + CMAKE + GIT)
+------------------------------------------------------------
+Run:
+  sudo apt install -y build-essential cmake git pkg-config
+
+Verify:
+  g++ --version
+  cmake --version
+  git --version
+
+------------------------------------------------------------
+3) INSTALL BOOST (ASIO/BEAST/JSON/SYSTEM)
+------------------------------------------------------------
+Run:
+  sudo apt install -y libboost-all-dev
+
+Verify Boost packages exist:
+  dpkg -l | grep libboost | head
+
+Note:
+- On Ubuntu 24.04/WSL, Boost version can vary.
+- Peerlink uses Boost.System + Boost.JSON.
+- If cmake finds Boost correctly, you're done.
+
+------------------------------------------------------------
+4) BUILD THE BACKEND (C++)
+------------------------------------------------------------
+Go to project root (replace path with your real path):
+  cd /mnt/c/Users/premh/Desktop/BOOST/boost-chat-server
+
+Clean build folder:
+  rm -rf build
+  mkdir build
+  cd build
+
+Configure:
+  cmake ..
+
+Build:
+  cmake --build . -j
+
+If build succeeds, you will have:
+  ./boost_chat_server
+
+------------------------------------------------------------
+5) RUN THE BACKEND (C++)
+------------------------------------------------------------
+Run the server:
+  ./boost_chat_server --tcp 5555 --ws 8080 --threads 4
+
+Expected output (JSON log style):
+  {"ts":"YYYY-MM-DDTHH:MM:SS","level":"INFO","msg":"TCP server listening on 0.0.0.0:5555"}
+  {"ts":"YYYY-MM-DDTHH:MM:SS","level":"INFO","msg":"WS server listening on 0.0.0.0:8080"}
+  {"ts":"YYYY-MM-DDTHH:MM:SS","level":"INFO","msg":"Running with threads=4"}
+
+Keep this terminal OPEN (server keeps running).
+
+------------------------------------------------------------
+6) TEST BACKEND PORTS (OPTIONAL BUT RECOMMENDED)
+------------------------------------------------------------
+Open a NEW terminal and run:
+  ss -lntp | grep -E "8080|5555"
+
+You should see something like:
+  LISTEN ... 0.0.0.0:8080 ... boost_chat_serv
+  LISTEN ... 0.0.0.0:5555 ... boost_chat_serv
+
+------------------------------------------------------------
+7) INSTALL NODE.JS + NPM (FOR FRONTEND)
+------------------------------------------------------------
+IMPORTANT:
+Vite may require newer Node than Ubuntu default.
+The clean way is using NodeSource.
+
+Step A: Install curl
+  sudo apt install -y curl
+
+Step B: Install Node 20.x (latest)
+  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  sudo apt install -y nodejs
+
+Verify:
+  node -v
+  npm -v
+
+If Vite says "Node 20.19+ required" and you have older 20.xx,
+upgrade nodejs:
+  sudo apt update
+  sudo apt install -y nodejs
+
+(If you still get older versions, install Node 22.x instead)
+  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+  sudo apt install -y nodejs
+
+------------------------------------------------------------
+8) RUN THE FRONTEND (REACT / VITE)
+------------------------------------------------------------
+Open NEW terminal (server still running in another terminal).
+
+Go to frontend folder:
+  cd /mnt/c/Users/premh/Desktop/BOOST/boost-chat-server/web-react
+
+Install dependencies:
+  npm install
+
+Run dev server:
+  npm run dev
+
+If you are on WSL and want Windows browser access:
+  npm run dev -- --host 0.0.0.0 --port 5173
+
+Then open in your browser:
+  http://localhost:5173
+
+------------------------------------------------------------
+9) HOW TO USE THE APP (UI FLOW)
+------------------------------------------------------------
+1) Click "Connect"
+2) Enter Nickname -> click "Set"
+3) Enter Room (default "lobby" or custom) -> click "Join"
+4) Now you are ONLINE in that room:
+   - you can send messages
+   - you can send PM
+   - you will see online users list
+   - the terminal prints every TX/RX JSON
+
+To test multiple users:
+- Open 2 browser tabs at http://localhost:5173
+- Do the steps with different nicknames
+- Join same room -> chat works
+
+------------------------------------------------------------
+10) OPTIONAL CLI TEST (WEBSOCKET)
+------------------------------------------------------------
+Install websocat:
+  sudo apt install -y websocat
+
+Connect:
+  websocat ws://127.0.0.1:8080
+
+Then paste JSON commands:
+  {"type":"name","nick":"cliUser"}
+  {"type":"join","room":"lobby"}
+  {"type":"message","text":"hello from terminal"}
+
+------------------------------------------------------------
+11) TROUBLESHOOTING (MOST COMMON)
+------------------------------------------------------------
+
+A) "Clock skew detected" during build (WSL)
+Fix:
+  sudo hwclock -s
+
+Or restart WSL from PowerShell:
+  wsl --shutdown
+
+B) "Vite requires Node.js 20.19+"
+Fix: install Node 22.x via NodeSource:
+  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+  sudo apt install -y nodejs
+
+C) WebSocket can’t connect (frontend shows error)
+1) Confirm backend is running:
+   ss -lntp | grep 8080
+2) Confirm browser URL:
+   ws://localhost:8080
+3) If using WSL + Windows browser, sometimes use 127.0.0.1:
+   In App.jsx you can hardcode:
+     const WS_URL = "ws://127.0.0.1:8080";
+
+D) Port already in use
+Find process:
+  sudo lsof -i :8080
+Kill it:
+  kill -9 <PID>
+
+------------------------------------------------------------
+12) FUNCTIONS INDEX (WHAT EXISTS AND WHAT IT DOES)
+------------------------------------------------------------
+
+NOTE:
+Exact filenames/locations may vary slightly if you renamed anything, but these
+are the core functions and responsibilities that Peerlink includes.
+
+------------------------------------------------------------
+A) BACKEND: util/Log (JSON logging)
+------------------------------------------------------------
+File:
+  include/util/Log.hpp
+  src/util/Log.cpp
+
+Functions:
+  util::Log::info(msg)
+    - Prints server log as JSON with level INFO
+
+  util::Log::warn(msg)
+    - Prints server log as JSON with level WARN
+
+  util::Log::error(msg)
+    - Prints server log as JSON with level ERROR
+
+  util::info(msg), util::warn(msg), util::error(msg)
+    - Backwards compatible wrappers that call util::Log::*
+
+------------------------------------------------------------
+B) BACKEND: core/RoomManager (room registry)
+------------------------------------------------------------
+Files:
+  include/core/RoomManager.hpp
+  src/core/RoomManager.cpp
+
+Common functions:
+  RoomManager::get_or_create(roomName)
+    - Returns existing ChatRoom if present, otherwise creates it
+    - Used by TcpSession/WsSession join flow
+
+------------------------------------------------------------
+C) BACKEND: core/ChatRoom (room + user routing)
+------------------------------------------------------------
+Files:
+  include/core/ChatRoom.hpp
+  src/core/ChatRoom.cpp
+
+Common functions:
+  ChatRoom::join(SessionHandle)
+    - Adds user/session into room
+
+  ChatRoom::leave(sessionId)
+    - Removes session from room
+
+  ChatRoom::broadcast(messageString)
+    - Sends message to all sessions in room (non-blocking; each session queues write)
+
+  ChatRoom::private_message(targetNickname, messageString)
+    - Sends to only matching nickname if online
+
+  ChatRoom::users()
+    - Returns list of nicknames currently in room
+
+  ChatRoom::set_nickname(sessionId, nick)
+    - Updates a session nickname inside the room
+
+  ChatRoom::name()
+    - Returns room name
+
+------------------------------------------------------------
+D) BACKEND: core/CommandParser (JSON input parsing)
+------------------------------------------------------------
+Files:
+  include/core/CommandParser.hpp
+  src/core/CommandParser.cpp
+
+Common behavior:
+  CommandParser::parse(rawString)
+    - Parses JSON string from client
+    - Produces a ParsedCommand object that indicates:
+      - type: Ping / SetName / JoinRoom / PrivateMsg / Msg
+      - a/b fields: nick, room, to, text
+
+------------------------------------------------------------
+E) BACKEND: net/TcpServer (TCP accept loop)
+------------------------------------------------------------
+Files:
+  include/net/TcpServer.hpp
+  src/net/TcpServer.cpp
+
+Common functions:
+  TcpServer::start()
+    - Starts async accept loop and logs that server is listening
+    - Creates TcpSession per connection
+
+------------------------------------------------------------
+F) BACKEND: net/TcpSession (one TCP client)
+------------------------------------------------------------
+Files:
+  include/net/TcpSession.hpp
+  src/net/TcpSession.cpp
+
+Common functions:
+  TcpSession::start()
+    - Called after accept; joins lobby by default (or your logic)
+    - starts reading from socketc:\Users\premh\Downloads\High_Performance_CHAT_SERVER_PEERLINK_one.pdf
+
+  TcpSession::do_read()
+    - async_read_until newline
+    - extracts line -> on_line()
+
+  TcpSession::on_line(line)
+    - Parses JSON command
+    - Handles ping/name/join/message/pm
+    - Broadcasts or sends errors
+
+  TcpSession::deliver(msg)
+    - Enqueues outgoing message (non-blocking)
+
+  TcpSession::do_write()
+    - async_write from queue
+
+  TcpSession::join_room(roomName)
+    - Leaves old room and joins new one
+    - Broadcasts system/users updates
+
+------------------------------------------------------------
+G) BACKEND: net/WsServer (WebSocket accept loop)
+------------------------------------------------------------
+Files:
+  include/net/WsServer.hpp
+  src/net/WsServer.cpp
+
+Common functions:
+  WsServer::start()
+    - Starts async accept loop and logs WS listening
+    - Creates WsSession per connection
+
+------------------------------------------------------------
+H) BACKEND: net/WsSession (one WebSocket client)
+------------------------------------------------------------
+Files:
+  include/net/WsSession.hpp
+  src/net/WsSession.cpp
+
+Common functions:
+  WsSession::start()
+    - Accepts websocket handshake
+    - Joins lobby or waits depending on flow
+    - begins do_read()
+
+  WsSession::do_read()
+    - async_read websocket frames
+    - parse JSON -> handle command
+    - continues reading loop
+
+  WsSession::deliver(msg)
+    - Enqueues outgoing frame
+
+  WsSession::do_write()
+    - async_write frames from queue
+
+  WsSession::join_room(roomName)
+    - same behavior as TCP session
+
+------------------------------------------------------------
+I) BACKEND: src/main.cpp (entry point)
+------------------------------------------------------------
+Main responsibilities:
+- Parse CLI args:
+    --tcp <port>
+    --ws <port>
+    --threads <n>
+- Create io_context
+- Start TcpServer + WsServer
+- Start worker thread pool
+- Handle signals for graceful shutdown
+
+------------------------------------------------------------
+J) FRONTEND: React UI
+------------------------------------------------------------
+Files:
+  web-react/src/App.jsx
+  web-react/src/styles.css
+  web-react/index.html
+
+Main parts:
+- Connect button: opens WebSocket
+- Identity:
+  - Nickname input + Set
+  - Room input + Join (default lobby, can be custom)
+- Online Users: shows server "users" event list
+- PM panel: sends {type:"pm"}
+- Terminal panel:
+  - logs TX and RX JSON lines
+- Chat window:
+  - shows messages, pm, system, error
+- Heartbeat:
+  - sends ping periodically, expects pong
+- Reconnect:
+  - exponential backoff reconnect attempts
+
+------------------------------------------------------------
+13) OUTPUTS YOU SHOULD SEE (REALISTIC)
+------------------------------------------------------------
+
+Server:
+  {"ts":"...","level":"INFO","msg":"ws_connected id=1"}
+  {"ts":"...","level":"INFO","msg":"ws_name id=1 nick=ansh"}
+  {"ts":"...","level":"INFO","msg":"ws_join id=1 room=lobby"}
+  {"ts":"...","level":"INFO","msg":"ws_msg id=1 room=lobby"}
+
+Frontend terminal:
+  TX {"type":"name","nick":"ansh"}
+  TX {"type":"join","room":"lobby"}
+  RX {"type":"users","room":"lobby","users":["ansh"],"ts":...}
+  TX {"type":"message","text":"hi"}
+  RX {"type":"message","room":"lobby","from":"ansh","text":"hi","ts":...}
+
+------------------------------------------------------------
+DONE ✅
+------------------------------------------------------------
+
+If you want, next upgrades to make Peerlink even more resume-heavy:
+- Enforce room rules server-side (require name before join, etc.)
+- Add presence per room + global presence list
+- Add rate limiting / anti-spam
+- Add TLS (wss) support
+- Add basic auth token handshake
+- Add metrics + structured event logs with event fields instead of "msg" strings

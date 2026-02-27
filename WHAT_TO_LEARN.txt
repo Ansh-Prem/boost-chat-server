@@ -1,0 +1,157 @@
+PEERLINK PROJECT STRUCTURE (Conceptual Topic Tree)
+==================================================
+
+1. SYSTEM OVERVIEW
+   ├── Problem Statement
+   ├── Real-time Communication Model
+   ├── Client–Server Architecture
+   └── High-Level Data Flow
+
+2. BACKEND (C++ / Boost)
+   2.1 Core Networking Layer
+       ├── Boost.Asio
+       │   ├── io_context
+       │   ├── async_accept
+       │   ├── async_read
+       │   ├── async_write
+       │   └── Strand (optional serialization)
+       ├── Thread Pool Model
+       └── Non-blocking I/O
+
+   2.2 WebSocket Layer (Boost.Beast)
+       ├── HTTP Upgrade Handshake
+       ├── WebSocket Frame Parsing
+       ├── Async WebSocket Read/Write
+       └── Ping/Pong Heartbeat
+
+   2.3 Session Management
+       ├── TcpSession
+       ├── WsSession
+       ├── Shared Pointer Lifetime Model
+       └── Write Queue (backpressure handling)
+
+   2.4 Room & Routing System
+       ├── RoomManager
+       │   ├── Create Room
+       │   ├── Get Room
+       │   └── Room Registry
+       ├── ChatRoom
+       │   ├── Join
+       │   ├── Leave
+       │   ├── Broadcast
+       │   └── User List Tracking
+       └── Multi-room Architecture
+
+   2.5 JSON Protocol Layer
+       ├── Message Types
+       │   ├── connect
+       │   ├── set_nickname
+       │   ├── join_room
+       │   ├── broadcast_message
+       │   ├── private_message
+       │   ├── user_list_update
+       │   └── ping
+       ├── Boost.JSON Parsing
+       └── Message Serialization
+
+   2.6 Logging & Observability
+       ├── Structured JSON Logs
+       ├── Event Tracking (connect, join, leave)
+       ├── Error Handling
+       └── Debug Output
+
+   2.7 Concurrency & Memory Model
+       ├── Shared Ownership (std::shared_ptr)
+       ├── Mutex for Shared State
+       ├── Thread-safe Room Registry
+       └── Handler Execution Model
+
+3. FRONTEND (React + Vite)
+   3.1 Project Setup
+       ├── Vite Configuration
+       ├── package.json
+       └── Dev Server
+
+   3.2 WebSocket Client Layer
+       ├── Establish Connection
+       ├── Handle Open / Close / Error
+       ├── Send JSON Messages
+       └── Receive & Parse Server Messages
+
+   3.3 UI Flow
+       ├── Connect to Server
+       ├── Set Nickname
+       ├── Enter Lobby or Custom Room
+       ├── Chat Window
+       └── Disconnect
+
+   3.4 UI Components
+       ├── Identity Panel
+       ├── Room Input
+       ├── Chat Messages View
+       ├── Online Users List
+       ├── Private Message Highlight
+       └── Message Input Box
+
+   3.5 State Management
+       ├── React useState
+       ├── WebSocket State
+       ├── Messages State
+       ├── Active Room State
+       └── Online Users State
+
+4. ARCHITECTURE DESIGN
+   ├── Layered Architecture
+   │   ├── Network Layer
+   │   ├── Routing Layer
+   │   ├── Room Layer
+   │   └── Presentation Layer
+   ├── Event-driven Model
+   ├── Reactor Pattern
+   └── Separation of Concerns
+
+5. ASYNCHRONOUS FLOW
+   ├── Accept Loop
+   ├── Read Loop
+   ├── Write Loop
+   ├── Broadcast Flow
+   └── Error Handling Flow
+
+6. PERFORMANCE & SCALABILITY
+   ├── Non-blocking Architecture
+   ├── Thread Pool Scaling
+   ├── Write Queue to Prevent Blocking
+   ├── Avoid Thread-per-client Model
+   └── Efficient Broadcast Strategy
+
+7. PROTOCOL DESIGN
+   ├── JSON-based Messaging
+   ├── Structured Event Types
+   ├── Heartbeat Mechanism
+   └── Room-based Message Isolation
+
+8. BUILD & DEPLOYMENT
+   ├── CMake Build System
+   ├── Linux Compilation
+   ├── Running Backend Server
+   ├── Running React Frontend
+   └── Testing with Browser / CLI
+
+9. TESTING STRATEGY
+   ├── Multiple Client Simulation
+   ├── Cross-room Messaging Test
+   ├── Private Messaging Test
+   ├── Heartbeat Test
+   └── Stress Testing
+
+10. FUTURE IMPROVEMENTS
+    ├── Authentication System
+    ├── Database Integration
+    ├── Persistent Chat History
+    ├── Rate Limiting
+    ├── TLS (wss://)
+    └── Horizontal Scaling
+
+==================================================
+END OF PEERLINK CONCEPT TREE
+==================================================
