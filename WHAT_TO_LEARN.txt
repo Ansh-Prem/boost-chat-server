@@ -152,6 +152,46 @@ PEERLINK PROJECT STRUCTURE (Conceptual Topic Tree)
     ├── TLS (wss://)
     └── Horizontal Scaling
 
+
+📁 Project Structure
+boost-chat-server/
+├── CMakeLists.txt
+├── include/
+│ ├── core/
+│ │ ├── ChatRoom.hpp
+│ │ ├── CommandParser.hpp
+│ │ └── RoomManager.hpp
+│ ├── net/
+│ │ ├── TcpServer.hpp
+│ │ ├── TcpSession.hpp
+│ │ ├── WsServer.hpp
+│ │ └── WsSession.hpp
+│ └── util/
+│ └── Log.hpp
+├── src/
+│ ├── core/
+│ │ ├── ChatRoom.cpp
+│ │ ├── CommandParser.cpp
+│ │ └── RoomManager.cpp
+│ ├── net/
+│ │ ├── TcpServer.cpp
+│ │ ├── TcpSession.cpp
+│ │ ├── WsServer.cpp
+│ │ └── WsSession.cpp
+│ ├── util/
+│ │ └── Log.cpp
+│ └── main.cpp
+└── web-react/
+├── index.html
+├── package.json
+├── vite.config.js
+├── public/
+└── src/
+├── App.jsx
+├── main.jsx
+└── styles.css
+
+
 ==================================================
 END OF PEERLINK CONCEPT TREE
 ==================================================
